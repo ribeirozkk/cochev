@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Minhoca</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #faebd7;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scale = 20; // Tamanho de cada bloco da minhoca
+        const rows = canvas.height / scale;
+        const columns = canvas.width / scale;
+
+        let snake = [];
+        let snakeLength = 1;
+        let snakeX = scale * 2;
+        let snakeY = scale * 2;
+        let velocityX = 0;
+        let velocityY = 0;
+        let foodX;
+        let foodY;
+        let score = 0;
+
+        function createFood() {
+            foodX = Math.floor(Math.random() * columns) * scale;
+            foodY = Math.floor(Math.random() * rows) * scale;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the food
+            ctx.fillStyle = 'red';
+            ctx.fillRect(foodX, foodY, scale, scale);
+
+            // Update snake position
+            snakeX += velocityX;
+            snakeY += velocityY;
+
+            // Snake eats the food
+            if (snakeX === foodX && snakeY === foodY) {
+                snakeLength++;
+                score++;
+                createFood();
+            }
+
+            // Move the snake
+            snake.push({ x: snakeX, y: snakeY });
+            if (snake.length > snakeLength) {
+                snake.shift();
+            }
+
+            // Draw the snake
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, scale, scale);
+            });
+
+            // Check for collisions with walls or itself
+            if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
+                resetGame();
+            }
+            for (let i = 0; i < snake.length - 1; i++) {
+                if (snake[i].x === snakeX && snake[i].y === snakeY) {
+                    resetGame();
+                }
+            }
+        }
+
+        function resetGame() {
+            snake = [];
+            snakeLength = 1;
+            snakeX = scale * 2;
+            snakeY = scale * 2;
+            velocityX = 0;
+            velocityY = 0;
+            score = 0;
+            createFood();
+        }
+
+        function update() {
+            draw();
+            setTimeout(update, 100);
+        }
+
+        function changeDirection(event) {
+            if (event.key === 'ArrowUp' && velocityY === 0) {
+                velocityX = 0;
+                velocityY = -scale;
+            } else if (event.key === 'ArrowDown' && velocityY === 0) {
+                velocityX = 0;
+                velocityY = scale;
+            } else if (event.key === 'ArrowLeft' && velocityX === 0) {
+                velocityX = -scale;
+                velocityY = 0;
+            } else if (event.key === 'ArrowRight' && velocityX === 0) {
+                velocityX = scale;
+                velocityY = 0;
+            }
+        }
+
+        document.addEventListener('keydown', changeDirection);
+
+        createFood();
+        update();
+    </script>
+</body>
+</html>
